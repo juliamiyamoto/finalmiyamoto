@@ -90,3 +90,41 @@ getPath(previous:Map<string,string | null>, end:string): string[]{
     }
     return path; 
 }
+
+planCrawl(
+    start: string,
+    options:{
+        maxStops?: number;
+        happyHourOnly?: boolean;
+        maxCoverCharge?: number;
+        mainRating?: number;
+        startTime?: number;
+    }={}
+): CrawlStop[]{
+    const{
+        maxStops = 5,
+        happyHourOnly = false,
+        maxCoverCharge = Infinity,
+        minRating = 0,
+        startTime = 20*60, 
+
+    } = options;
+    const visted = new Set<string>();
+    const crawl: CrawlStop[] = [];
+    let current = start;
+    let currentTime = startTime;
+
+    const startBar = this.getBar(start);
+    if (!startBar) return[];
+    crawl.push({bar:startBar, arrivalTime: 0, distanceFromPrev:0});
+    visted.add(start);
+
+    while (crawl.length <maxStops){
+        const {distance, previous} = this.dijkstra(current);
+        let nextBar: string | null = null;
+        let bestDist = Infinity;
+
+        for (const [name, dist] of distances.entries()){
+
+        }
+    }
