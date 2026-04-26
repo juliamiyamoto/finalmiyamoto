@@ -1,4 +1,4 @@
-interface Bar{
+export interface Bar{
     name:string;
     neighborhood:string;
     rating:number;
@@ -7,23 +7,23 @@ interface Bar{
     closes:number;
 }
 
-interface Edge{
+export interface Edge{
     to:string;
     distance: number;
 }
 
-interface DiskstraResults{
+export interface DijkstraResults{
     distance: Map<string, number>;
     previous: Map<string, string|null>;
 }
 
-interface CrawlStop {
+export interface CrawlStop {
     bar: Bar;
-    arrivedAt: number;
-    distanceFromPrev: number
+    arrivalTime: number;
+    distanceFromPrev: number;
 }
 
-class BarGraph {
+export class BarGraph {
     private adjacency: Map<string, Edge[]> = new Map();
     private bars: Map<string, Bar> = new Map();
 
@@ -35,6 +35,7 @@ class BarGraph {
     }
     public addEdge(from: string, to: string, distanceMinutes:number):void{
         this.adjacency.get(from)?.push({to, distance: distanceMinutes});
+        // add reverse edge
         this.adjacency.get(to)?.push({to: from, distance: distanceMinutes});
     }
     getBar(name: string): Bar | undefined {
@@ -50,7 +51,7 @@ class BarGraph {
         return this.bars.has(name);
     }
     
-dijkstra(start: string): DiskstraResults {
+    dijkstra(start: string): DijkstraResults {
     const distance = new Map<string, number>();
     const previous = new Map<string, string | null>();
     const visited = new Set<string>();
@@ -97,7 +98,7 @@ planCrawl(
         maxStops?: number;
         happyHourOnly?: boolean;
         maxCoverCharge?: number;
-        mainRating?: number;
+        minRating?: number;
         startTime?: number;
     }={}
 ): CrawlStop[]{
@@ -106,25 +107,116 @@ planCrawl(
         happyHourOnly = false,
         maxCoverCharge = Infinity,
         minRating = 0,
-        startTime = 20*60, 
-
+        startTime = 20*60,
     } = options;
-    const visted = new Set<string>();
+    const visited = new Set<string>();
     const crawl: CrawlStop[] = [];
     let current = start;
     let currentTime = startTime;
 
     const startBar = this.getBar(start);
-    if (!startBar) return[];
-    crawl.push({bar:startBar, arrivalTime: 0, distanceFromPrev:0});
-    visted.add(start);
+    if (!startBar) return [];
+    crawl.push({bar: startBar, arrivalTime: 0, distanceFromPrev: 0});
+    visited.add(start);
 
-    while (crawl.length <maxStops){
+    while (crawl.length < maxStops){
         const {distance, previous} = this.dijkstra(current);
         let nextBar: string | null = null;
         let bestDist = Infinity;
 
-        for (const [name, dist] of distances.entries()){
+        for (const [name, dist] of distance.entries()){
+            if (visited.has(name)) continue;
+            const bar = this.getBar(name);
+            if(!bar) continue;
 
+            if (happyHourOnly && !bar.happyHour) continue;
+            if (bar.coverCharge > maxCoverCharge) continue;
+            if (bar.rating < minRating) continue;
+
+            if (dist < bestDist){
+                bestDist = dist;
+                nextBar = name;
+            }
+        }
+
+        if (!nextBar) break;
+
+        const bar = this.getBar(nextBar)!;
+        currentTime += bestDist + 60;
+        crawl.push({
+            bar,
+            arrivalTime: currentTime - startTime,
+            distanceFromPrev: bestDist,
+        });
+        visited.add(nextBar);
+        current = nextBar;
+    }
+    return crawl;
+}
+}
+
+class MinHeap{
+    private heap: [number, string][]=[];
+    insert(priority: number, name:string): void{
+        this.heap.push([priority, name]);
+        this._bubbleUp(this.heap.length - 1);
+    }
+    extractMin(): [number, string] | null{
+        if (this.heap.length === 0) return null;
+        const min = this.heap[0];
+        const last = this.heap.pop()!;
+        if (this.heap.length > 0){
+            this.heap[0] = last;
+            this._sinkDown(0);
+        }
+        return min;
+    }
+    get size(): number {return this.heap.length;}
+private _bubbleUp(i:number):void{
+        while(i>0){
+            const parent = Math.floor((i-1)/2);
+            if(this.heap[parent][0]<= this.heap[i][0]) break;
+            [this.heap[parent], this.heap[i]]= [this.heap[i], this.heap[parent]];
+            i= parent;
         }
     }
+    private _sinkDown (i:number): void{
+        const n= this.heap.length;
+        while (true){
+            let smallest = i;
+            const left = 2 * i +1;
+            const right = 2 *i+2;
+            if (left < n && this.heap[left][0] <this.heap[smallest][0])smallest= left;
+            if (right < n && this.heap[right][0] <this.heap[smallest][0])smallest= right;
+            if (smallest === i) break;
+            [this.heap[smallest], this.heap[i]]= [this.heap[i], this.heap[smallest]];
+            i= smallest;
+        }
+    }
+}
+
+export function formatTime(minutesFromMidnight: number): string {
+    const hours = Math.floor(minutesFromMidnight / 60) % 24;
+    const minutes = minutesFromMidnight % 60;
+    return `${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
+}
+
+export function printCrawl(crawl: CrawlStop[], startTime: number): void {
+    console.log("Bar Crawl Itinerary:");
+    console.log("=".repeat(50));
+    crawl.forEach((stop,i) => {
+        const arrivalTime = formatTime(stop.arrivalTime + startTime);
+       const walk = stop.distanceFromPrev > 0 ? `(${stop.distanceFromPrev} min walk)` : "(start here)";
+    console.log (`\nStop ${i+1}: ${stop.bar.name}${walk}`);
+       console.log (`Arrival Time: ${arrivalTime}`);
+       console.log (`Neighborhood: ${stop.bar.neighborhood}`);
+       console.log (`  Rating: ${"★".repeat(stop.bar.rating)}${"☆".repeat(5 - stop.bar.rating)}`);
+       console.log(`  Happy Hour: ${stop.bar.happyHour ? "Yes" : "No"}`);
+    console.log(`  Cover: ${stop.bar.coverCharge === 0 ? "Free" : `$${stop.bar.coverCharge}`}`);
+    console.log(`  Closes: ${stop.bar.closes}:00`);
+  });
+  console.log("\n" + "=".repeat(50));
+  const totalWalk = crawl.reduce((sum, s) => sum + s.distanceFromPrev, 0);
+  console.log(`Total walking: ${totalWalk} minutes across ${crawl.length} stops`);
+}
+
