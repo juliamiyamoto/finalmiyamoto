@@ -206,7 +206,7 @@ export function printCrawl(crawl: CrawlStop[], startTime: number): void {
     console.log("=".repeat(50));
     crawl.forEach((stop,i) => {
         const arrivalTime = formatTime(stop.arrivalTime + startTime);
-       const walk = stop.distanceFromPrev > 0 ? `(${stop.distanceFromPrev} min walk)` : "(start here)";
+       const walk = stop.distanceFromPrev > 0 ? `(${stop.distanceFromPrev} min)` : "(start here)";
     console.log (`\nStop ${i+1}: ${stop.bar.name}${walk}`);
        console.log (`Arrival Time: ${arrivalTime}`);
        console.log (`Neighborhood: ${stop.bar.neighborhood}`);

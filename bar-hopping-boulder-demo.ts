@@ -18,25 +18,25 @@ bars.forEach(b => graph.addBar(b));
 
 // Walking times in minutes between bars
 
-graph.addEdge("Rosetta Hall",   "The Attic",      2);
-graph.addEdge("Rosetta Hall",   "Rio Grande",     4);
-graph.addEdge("The Attic",      "Rio Grande",     3);
+graph.addEdge("Rosetta Hall",   "The Attic",      3);
+graph.addEdge("Rosetta Hall",   "Rio Grande",     1);
+graph.addEdge("The Attic",      "Rio Grande",     2);
 
 
-graph.addEdge("Sundown Saloon", "Press Play",     5);
-graph.addEdge("Sundown Saloon", "Avanti",         6);
-graph.addEdge("Press Play",     "Avanti",         4);
+graph.addEdge("Sundown Saloon", "Press Play",     4);
+graph.addEdge("Sundown Saloon", "Avanti",         5);
+graph.addEdge("Press Play",     "Avanti",         7);
 
 
-graph.addEdge("The Sink",       "Stella's",       4);
+graph.addEdge("The Sink",       "Stella's",      15);
 
 
-graph.addEdge("Rio Grande",     "Sundown Saloon", 5);
-graph.addEdge("Rosetta Hall",   "Avanti",         7);
-graph.addEdge("The Attic",      "Press Play",     6);
-graph.addEdge("Avanti",         "The Sink",       14);
-graph.addEdge("Sundown Saloon", "The Sink",       16);
-graph.addEdge("Rio Grande",     "Stella's",       18);
+graph.addEdge("Rio Grande",     "Sundown Saloon", 3);
+graph.addEdge("Rosetta Hall",   "Avanti",         6);
+graph.addEdge("The Attic",      "Press Play",     2);
+graph.addEdge("Avanti",         "The Sink",       20);
+graph.addEdge("Sundown Saloon", "The Sink",       17);
+graph.addEdge("Rio Grande",     "Stella's",       1);
 
 const START_TIME = 20 * 60; 
 
@@ -44,7 +44,7 @@ const START_TIME = 20 * 60;
 
 console.log("\n EXAMPLE 1: Full crawl starting at Avanti");
 const crawl1 = graph.planCrawl("Avanti", {
-  maxStops: 6,
+  maxStops: 7,
   startTime: START_TIME,
 });
 printCrawl(crawl1, START_TIME);
