@@ -42,9 +42,9 @@ const START_TIME = 20 * 60;
 
 
 
-console.log("\n EXAMPLE 1: Full crawl starting at Avanti");
-const crawl1 = graph.planCrawl("Avanti", {
-  maxStops: 7,
+console.log("\n EXAMPLE 1: Full crawl starting at The Sink");
+const crawl1 = graph.planCrawl("The Sink", {
+  maxStops: 5,
   startTime: START_TIME,
 });
 printCrawl(crawl1, START_TIME);
